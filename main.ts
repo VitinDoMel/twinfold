@@ -1,41 +1,68 @@
-// A working best-game-01 entry (Node 22, standard library only): the game is this directory's
-// game/ folder, plain static files a desktop browser loads offline (game/index.html and its ES
-// modules, no library and no network request), and the program hands it in. It copies game/ and
-// screenshots/ from beside this file to /output and writes /output/dossier.json, the summary the
-// judge reads, with the vendored make.fun library. A starting point, not a winner: Block Dodger, a
-// plain 2D canvas game where a paddle dodges falling blocks and catches coins, with a title screen,
-// score, lives and levels, game over and restart, flat colours and no sound. Build your own game
-// (any genre, any library you vendor under game/, or none), put your 3 or 4 PNG or JPEG screenshots
-// in screenshots/ (the first by name is the cover) and run it.
-//
-// Serve it locally with `node serve.ts`, then open http://localhost:8080.
-// Outside the grader's container, MAKEFUN_OUTPUT_DIR stands in for /output:
-//   mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
+/**
+ * Twinfold submission bundler.
+ * Packages the standalone game assets and verified visual captures
+ * into the target distribution folder, synthesizing the evaluation dossier.
+ */
 
-import { cpSync, existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
-import { fileURLToPath } from 'node:url';
-import { buildDossier } from './vendor/makefun-game.ts';
+import * as filesystem from 'node:fs';
+import * as filepath from 'node:path';
+import { fileURLToPath as resolveFilePath } from 'node:url';
+import { buildDossier as generateDossierSummary } from './vendor/makefun-game.ts';
 
-const here = fileURLToPath(new URL('.', import.meta.url));
-const out = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+interface PackagingOptions {
+  sourceDirectory: string;
+  targetDirectory: string;
+}
 
-mkdirSync(out, { recursive: true });
-cpSync(join(here, 'game'), join(out, 'game'), { recursive: true });
-mkdirSync(join(out, 'screenshots'), { recursive: true });
-if (existsSync(join(here, 'screenshots'))) cpSync(join(here, 'screenshots'), join(out, 'screenshots'), { recursive: true });
+const DOSSIER_CONSTRAINTS = {
+  text_max_bytes: 163840,
+  screenshots: {
+    max: 4,
+    max_bytes: 262144,
+  },
+  game_max_files: 993,
+  game_max_bytes: 50331648,
+  game_path_max_bytes: 1000,
+} as const;
 
-// The scorer's own caps (reference/gate.json): only text_max_bytes shapes the bytes; the others refuse an entry the
-// scorer would refuse (more than 4 screenshots or one over 256 KiB; more than 993 files in game/ or 48 MiB of game
-// files, in all, or a path under game/ over 1000 bytes: game/ counts beside /output's own 1000-entry cap, its
-// screenshots/ and dossier.json).
-writeFileSync(
-  join(out, 'dossier.json'),
-  buildDossier(out, {
-    text_max_bytes: 163840,
-    screenshots: { max: 4, max_bytes: 262144 },
-    game_max_files: 993,
-    game_max_bytes: 50331648,
-    game_path_max_bytes: 1000,
-  }),
-);
+function synchronizeDirectory(origin: string, destination: string): void {
+  if (!filesystem.existsSync(origin)) {
+    return;
+  }
+  filesystem.mkdirSync(destination, { recursive: true });
+  filesystem.cpSync(origin, destination, { recursive: true });
+}
+
+function produceSubmissionBundle(options: PackagingOptions): void {
+  const { sourceDirectory, targetDirectory } = options;
+
+  // Ensure root output destination exists
+  filesystem.mkdirSync(targetDirectory, { recursive: true });
+
+  // Transfer client game distribution
+  const clientSource = filepath.join(sourceDirectory, 'game');
+  const clientDestination = filepath.join(targetDirectory, 'game');
+  synchronizeDirectory(clientSource, clientDestination);
+
+  // Transfer captured gameplay screenshots
+  const capturesSource = filepath.join(sourceDirectory, 'screenshots');
+  const capturesDestination = filepath.join(targetDirectory, 'screenshots');
+  synchronizeDirectory(capturesSource, capturesDestination);
+
+  // Compile evaluative dossier document
+  const dossierPayload = generateDossierSummary(targetDirectory, DOSSIER_CONSTRAINTS);
+  const dossierLocation = filepath.join(targetDirectory, 'dossier.json');
+  filesystem.writeFileSync(dossierLocation, dossierPayload);
+}
+
+function executePackaging(): void {
+  const scriptFolder = filepath.dirname(resolveFilePath(import.meta.url));
+  const outputFolder = process.env.MAKEFUN_OUTPUT_DIR ?? '/output';
+
+  produceSubmissionBundle({
+    sourceDirectory: scriptFolder,
+    targetDirectory: outputFolder,
+  });
+}
+
+executePackaging();
