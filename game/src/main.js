@@ -1,6 +1,7 @@
-// Application Bootloader & Loop Orchestrator for Twinfold
+// Application Bootloader, Game Loop & Deterministic Screenshot Stager for Twinfold
 
 import { TwinfoldGame } from './game.js';
+import { ShotManager } from './shots.js';
 
 class Application {
   static boot() {
@@ -10,6 +11,29 @@ class Application {
       return;
     }
 
+    // Check if launched in headless deterministic screenshot mode (?shot=...)
+    const params = new URLSearchParams(window.location.search);
+    const shot = params.get('shot');
+    const seedParam = Number.parseInt(params.get('seed') ?? '', 10);
+    const seed = Number.isInteger(seedParam) ? seedParam : 1;
+
+    if (shot) {
+      // Deterministic screenshot staging: paint twice to settle and signal readiness
+      let frames = 0;
+      const paintShot = () => {
+        ShotManager.renderShot(shot, seed, canvas);
+        frames += 1;
+        if (frames < 2) {
+          requestAnimationFrame(paintShot);
+        } else {
+          window.__shotReady = true;
+        }
+      };
+      paintShot();
+      return;
+    }
+
+    // Interactive game loop
     const game = new TwinfoldGame(canvas);
 
     let lastTime = performance.now();

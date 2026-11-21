@@ -1,4 +1,5 @@
 *-kit/
 out/
 node_modules/
+tools/
 .DS_Store
