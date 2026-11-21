@@ -310,7 +310,7 @@ export class ScreenManager {
 
     ctx.font = 'bold 20px system-ui, sans-serif';
     ctx.fillStyle = c.accentGold;
-    ctx.fillText(`Stage Score: ${levelState.score.toLocaleString()}`, CANVAS_WIDTH / 2, cardY + 236);
+    ctx.fillText(`Stage Score: ${levelState.score.toLocaleString('en-US')}`, CANVAS_WIDTH / 2, cardY + 236);
 
     // Navigation prompt
     const pulse = (Math.sin(Date.now() / 150) + 1) * 0.5;
@@ -359,7 +359,7 @@ export class ScreenManager {
     ctx.font = '15px system-ui, sans-serif';
     ctx.fillStyle = c.textSecondary;
     ctx.fillText(`Differences Found: ${levelState.foundCount} of ${levelState.differences.length}`, CANVAS_WIDTH / 2, cardY + 125);
-    ctx.fillText(`Score Accumulated: ${levelState.score.toLocaleString()}`, CANVAS_WIDTH / 2, cardY + 150);
+    ctx.fillText(`Score Accumulated: ${levelState.score.toLocaleString('en-US')}`, CANVAS_WIDTH / 2, cardY + 150);
 
     const pulse = (Math.sin(Date.now() / 150) + 1) * 0.5;
     ctx.fillStyle = `rgba(245, 158, 11, ${0.8 + pulse * 0.2})`;
@@ -434,7 +434,7 @@ export class ScreenManager {
 
     ctx.font = 'bold 26px system-ui, sans-serif';
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(`TOTAL SCORE: ${totalCampaignScore.toLocaleString()}`, CANVAS_WIDTH / 2, cardY + 295);
+    ctx.fillText(`TOTAL SCORE: ${totalCampaignScore.toLocaleString('en-US')}`, CANVAS_WIDTH / 2, cardY + 295);
 
     ctx.font = '13px system-ui, sans-serif';
     ctx.fillStyle = c.successLight;

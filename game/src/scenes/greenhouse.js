@@ -182,12 +182,238 @@ export function buildGreenhouseScene(rng) {
         ctx.fillRect(40, 510, 506, 18);
         ctx.strokeRect(40, 510, 506, 18);
 
-        // Spare terracotta pots on bottom shelf
-        for (let px = 80; px < 220; px += 34) {
-          ctx.fillStyle = '#c2410c';
-          ctx.fillRect(px, 485, 24, 25);
-          ctx.strokeRect(px, 485, 24, 25);
+        // Tiered variety of terracotta and ceramic pots on bottom shelf
+        const shelfPots = [
+          { x: 80, color: '#c2410c', h: 26, w: 22 },
+          { x: 110, color: '#047857', h: 22, w: 20 },
+          { x: 138, color: '#c2410c', h: 28, w: 24 },
+          { x: 170, color: '#d97706', h: 20, w: 18 },
+          { x: 196, color: '#c2410c', h: 26, w: 22 },
+          { x: 410, color: '#0284c7', h: 24, w: 22 },
+          { x: 440, color: '#c2410c', h: 28, w: 24 },
+          { x: 472, color: '#7c2d12', h: 22, w: 20 },
+        ];
+        for (const p of shelfPots) {
+          ctx.fillStyle = p.color;
+          ctx.fillRect(p.x, 510 - p.h, p.w, p.h);
+          ctx.strokeStyle = '#270e02';
+          ctx.lineWidth = 1.2;
+          ctx.strokeRect(p.x, 510 - p.h, p.w, p.h);
         }
+
+        ctx.restore();
+      },
+    },
+
+    // --- LAYER 4.5: Dense Botanical Floor Props, Sacks & Wheelbarrow ---
+    {
+      id: 'greenhouse_floor_props',
+      layer: 4.5,
+      render(ctx) {
+        ctx.save();
+
+        // 1. Stacked Burlap Sacks of Compost (Far Left)
+        ctx.save();
+        ctx.translate(35, 545);
+        // Bottom sack
+        ctx.fillStyle = '#ca8a04';
+        ctx.beginPath();
+        ctx.ellipse(32, 38, 32, 18, -0.05, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#713f12';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Top leaning sack
+        ctx.fillStyle = '#a16207';
+        ctx.beginPath();
+        ctx.ellipse(36, 16, 26, 16, 0.25, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+
+        // Tied neck with twine
+        ctx.fillStyle = '#713f12';
+        ctx.fillRect(56, 4, 10, 6);
+        ctx.strokeStyle = '#fef08a';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(56, 4, 10, 6);
+
+        // Stencil text on sack
+        ctx.font = 'bold 8px system-ui, sans-serif';
+        ctx.fillStyle = '#451a03';
+        ctx.textAlign = 'center';
+        ctx.fillText('PEAT MOSS', 32, 40);
+
+        // Spilled potting soil & fallen leaves
+        ctx.fillStyle = '#271206';
+        ctx.beginPath();
+        ctx.ellipse(30, 52, 28, 6, 0, 0, Math.PI * 2);
+        ctx.fill();
+        // Leaves
+        ctx.fillStyle = '#15803d';
+        ctx.fillRect(10, 48, 5, 3);
+        ctx.fillRect(52, 50, 4, 3);
+        ctx.restore();
+
+        // 2. Metal Watering Can & Seedling Nursery Tray (Center-Left)
+        ctx.save();
+        ctx.translate(145, 545);
+        // Galvanized zinc watering can
+        ctx.fillStyle = '#64748b';
+        ctx.beginPath();
+        ctx.ellipse(22, 34, 16, 14, 0, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#334155';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // Spout
+        ctx.beginPath();
+        ctx.moveTo(10, 30);
+        ctx.lineTo(-8, 18);
+        ctx.stroke();
+        // Rose sprinkler
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.ellipse(-9, 17, 5, 3, -0.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Arched handle
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.arc(22, 20, 14, Math.PI, 0);
+        ctx.stroke();
+
+        // Seedling Flat wooden nursery box
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(45, 32, 44, 16);
+        ctx.strokeStyle = '#451a03';
+        ctx.lineWidth = 1.2;
+        ctx.strokeRect(45, 32, 44, 16);
+        // Soil inside
+        ctx.fillStyle = '#271206';
+        ctx.fillRect(47, 34, 40, 6);
+        // Sprouted green cotyledons
+        ctx.fillStyle = '#22c55e';
+        for (let s = 50; s <= 82; s += 8) {
+          ctx.beginPath();
+          ctx.arc(s, 31, 2, 0, Math.PI * 2);
+          ctx.arc(s + 2, 30, 2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        // 3. Gardener's Wooden Wheelbarrow with Potted Flora (Center-Right)
+        ctx.save();
+        ctx.translate(345, 540);
+        // Wooden wheelbarrow body
+        ctx.fillStyle = '#854d0e';
+        ctx.beginPath();
+        ctx.moveTo(15, 20);
+        ctx.lineTo(85, 10);
+        ctx.lineTo(80, 42);
+        ctx.lineTo(25, 42);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#451a03';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Wooden handle beams extending right
+        ctx.strokeStyle = '#5c3317';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(70, 32);
+        ctx.lineTo(105, 30);
+        ctx.stroke();
+
+        // Leg prop
+        ctx.beginPath();
+        ctx.moveTo(75, 42);
+        ctx.lineTo(72, 54);
+        ctx.stroke();
+
+        // Spoked iron wheel on left
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(15, 42, 12, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.fillStyle = '#334155';
+        ctx.beginPath();
+        ctx.arc(15, 42, 3, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Potted plants loaded inside wheelbarrow
+        // Yellow pot with spiky aloe
+        ctx.fillStyle = '#eab308';
+        ctx.fillRect(32, 8, 16, 14);
+        ctx.strokeRect(32, 8, 16, 14);
+        ctx.fillStyle = '#15803d';
+        ctx.beginPath();
+        ctx.moveTo(40, 8);
+        ctx.lineTo(34, -4);
+        ctx.lineTo(40, -1);
+        ctx.lineTo(46, -4);
+        ctx.closePath();
+        ctx.fill();
+
+        // Turquoise pot with fern
+        ctx.fillStyle = '#06b6d4';
+        ctx.fillRect(54, 4, 18, 16);
+        ctx.strokeRect(54, 4, 18, 16);
+        ctx.fillStyle = '#16a34a';
+        ctx.beginPath();
+        ctx.arc(63, 2, 7, 0, Math.PI, true);
+        ctx.fill();
+        ctx.restore();
+
+        // 4. Oak Rain Barrel & Giant Potted Boston Fern (Far Right)
+        ctx.save();
+        ctx.translate(470, 530);
+        // Rain barrel
+        ctx.fillStyle = '#713f12';
+        ctx.beginPath();
+        ctx.moveTo(0, 5);
+        ctx.quadraticCurveTo(-4, 30, 2, 60);
+        ctx.lineTo(48, 60);
+        ctx.quadraticCurveTo(54, 30, 50, 5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#3b1c09';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // Iron hoops
+        ctx.strokeStyle = '#1e293b';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.moveTo(0, 15);
+        ctx.lineTo(50, 15);
+        ctx.moveTo(0, 48);
+        ctx.lineTo(49, 48);
+        ctx.stroke();
+
+        // Brass spigot tap
+        ctx.fillStyle = '#f59e0b';
+        ctx.fillRect(49, 36, 10, 4);
+        ctx.fillRect(57, 34, 3, 9);
+
+        // Water droplet
+        ctx.fillStyle = '#38bdf8';
+        ctx.beginPath();
+        ctx.arc(58, 48, 1.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Giant Boston fern cascading from stone pot
+        ctx.fillStyle = '#15803d';
+        for (let f = -12; f <= 12; f += 6) {
+          ctx.beginPath();
+          ctx.ellipse(f, 3, 14, 5, f * 0.08, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
 
         ctx.restore();
       },

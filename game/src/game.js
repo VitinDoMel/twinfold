@@ -180,18 +180,18 @@ export class Game {
 
     // 5. HUD clicks during gameplay
     if (cy <= 72) {
-      // Hint button click
-      if (cx >= 995 && cx <= 1110 && cy >= 18 && cy <= 54) {
+      // Hint button pill click [H] (x: 905..1020, y: 20..52)
+      if (cx >= 900 && cx <= 1025 && cy >= 18 && cy <= 54) {
         this.handleAction('hint');
         return;
       }
-      // Mute toggle click
-      if (cx >= 1120 && cx <= 1190 && cy >= 10 && cy <= 45) {
+      // Mute toggle pill click [M] (x: 1035..1130, y: 20..52)
+      if (cx >= 1030 && cx <= 1130 && cy >= 18 && cy <= 54) {
         this.handleAction('mute');
         return;
       }
-      // Pause toggle click
-      if (cx >= 1195 && cx <= 1260 && cy >= 10 && cy <= 45) {
+      // Pause toggle pill click [P] (x: 1140..1235, y: 20..52)
+      if (cx >= 1135 && cx <= 1240 && cy >= 18 && cy <= 54) {
         this.handleAction('pause');
         return;
       }

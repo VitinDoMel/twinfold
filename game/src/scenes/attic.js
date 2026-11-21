@@ -144,6 +144,223 @@ export function buildAtticScene(rng) {
       },
     },
 
+    // --- LAYER 2.5: Dense Loft Floor Props & Artifacts ---
+    {
+      id: 'attic_floor_props',
+      layer: 2.5,
+      render(ctx) {
+        ctx.save();
+
+        // 1. Ornate Persian Rug Runner under Pendulum Bob (Center)
+        ctx.save();
+        ctx.translate(225, 570);
+        ctx.fillStyle = '#7f1d1d'; // Crimson rug
+        ctx.fillRect(0, 0, 135, 48);
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, 0, 135, 48);
+
+        // Inner decorative border
+        ctx.strokeStyle = '#1e3a8a';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(4, 4, 127, 40);
+
+        // Diamond medallions
+        ctx.fillStyle = '#f59e0b';
+        for (let mx = 20; mx <= 115; mx += 28) {
+          ctx.beginPath();
+          ctx.moveTo(mx, 14);
+          ctx.lineTo(mx + 8, 24);
+          ctx.lineTo(mx, 34);
+          ctx.lineTo(mx - 8, 24);
+          ctx.closePath();
+          ctx.fill();
+        }
+
+        // Fringes on ends
+        ctx.strokeStyle = '#fef08a';
+        ctx.lineWidth = 1.2;
+        for (let fy = 2; fy <= 46; fy += 4) {
+          ctx.beginPath();
+          ctx.moveTo(0, fy);
+          ctx.lineTo(-6, fy);
+          ctx.moveTo(135, fy);
+          ctx.lineTo(141, fy);
+          ctx.stroke();
+        }
+        ctx.restore();
+
+        // 2. Brass-Bound Inventor's Trunk / Sea Chest (Far Left)
+        ctx.save();
+        ctx.translate(35, 540);
+        // Chest body
+        ctx.fillStyle = '#451a03';
+        ctx.fillRect(0, 15, 95, 55);
+        ctx.strokeStyle = '#270e02';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, 15, 95, 55);
+
+        // Curved chest lid
+        ctx.fillStyle = '#5c2406';
+        ctx.beginPath();
+        ctx.arc(47.5, 15, 47.5, Math.PI, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Brass reinforcement straps and corner brackets
+        ctx.fillStyle = '#d97706';
+        ctx.fillRect(15, -4, 8, 74);
+        ctx.fillRect(72, -4, 8, 74);
+        ctx.strokeRect(15, -4, 8, 74);
+        ctx.strokeRect(72, -4, 8, 74);
+
+        // Center brass keyhole hasp plate
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(41, 10, 13, 16);
+        ctx.strokeStyle = '#78350f';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(41, 10, 13, 16);
+        ctx.fillStyle = '#0f172a';
+        ctx.beginPath();
+        ctx.arc(47.5, 16, 2, 0, Math.PI * 2);
+        ctx.rect(46.5, 16, 2, 5);
+        ctx.fill();
+
+        // Glowing brass oil lamp resting on chest
+        Painter.lantern(ctx, 47.5, -18, 0.9, true, '#f59e0b');
+        ctx.restore();
+
+        // 3. Stack of Leather Horology Books & Parchment (Left-Center)
+        ctx.save();
+        ctx.translate(145, 565);
+        // Book 1 (bottom crimson)
+        ctx.fillStyle = '#881337';
+        ctx.fillRect(0, 32, 65, 14);
+        ctx.strokeStyle = '#4c0519';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(0, 32, 65, 14);
+        // Book 2 (middle dark blue)
+        ctx.fillStyle = '#1e3a8a';
+        ctx.fillRect(4, 18, 58, 14);
+        ctx.strokeRect(4, 18, 58, 14);
+        // Book 3 (top forest green)
+        ctx.fillStyle = '#14532d';
+        ctx.fillRect(8, 6, 52, 12);
+        ctx.strokeRect(8, 6, 52, 12);
+
+        // Gold foil spine ribs
+        ctx.fillStyle = '#fbbf24';
+        ctx.fillRect(12, 8, 2, 8);
+        ctx.fillRect(20, 8, 2, 8);
+        ctx.fillRect(8, 20, 2, 10);
+        ctx.fillRect(18, 20, 2, 10);
+
+        // Rolled parchment scroll leaning on books
+        ctx.fillStyle = '#fef3c7';
+        ctx.beginPath();
+        ctx.ellipse(65, 24, 7, 18, 0.35, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#b45309';
+        ctx.stroke();
+        ctx.restore();
+
+        // 4. Machinist's Steel Cantilever Toolbox (Center-Right)
+        ctx.save();
+        ctx.translate(375, 555);
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(0, 15, 75, 45);
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, 15, 75, 45);
+
+        // Open lid tray angled up
+        ctx.fillStyle = '#475569';
+        ctx.beginPath();
+        ctx.moveTo(0, 15);
+        ctx.lineTo(-12, -4);
+        ctx.lineTo(63, -4);
+        ctx.lineTo(75, 15);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+
+        // Oil can with long curved spout in tray
+        ctx.fillStyle = '#d97706';
+        ctx.beginPath();
+        ctx.arc(20, 5, 8, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#b45309';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(20, 0);
+        ctx.lineTo(34, -14);
+        ctx.stroke();
+
+        // Scattered brass gear wheels on floor
+        Painter.gear(ctx, -14, 50, 10, 8, 2, { color: '#f59e0b', strokeColor: '#78350f', spokes: 3 });
+        Painter.gear(ctx, 88, 52, 12, 10, 3, { color: '#d97706', strokeColor: '#78350f', spokes: 4 });
+        ctx.restore();
+
+        // 5. Wooden Crate with Mantel Clock (Far Right)
+        ctx.save();
+        ctx.translate(475, 535);
+        // Wood crate
+        ctx.fillStyle = '#78350f';
+        ctx.fillRect(0, 20, 85, 52);
+        ctx.strokeStyle = '#451a03';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(0, 20, 85, 52);
+
+        // Slats
+        ctx.fillStyle = '#3b1c09';
+        ctx.fillRect(4, 34, 77, 3);
+        ctx.fillRect(4, 52, 77, 3);
+
+        // Vintage mantel clock sitting on crate
+        ctx.fillStyle = '#5c2406';
+        ctx.beginPath();
+        ctx.moveTo(18, 20);
+        ctx.lineTo(25, -12);
+        ctx.lineTo(60, -12);
+        ctx.lineTo(67, 20);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#270e02';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+
+        // White clock dial
+        ctx.fillStyle = '#fffbeb';
+        ctx.beginPath();
+        ctx.arc(42.5, 3, 11, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.strokeStyle = '#d97706';
+        ctx.lineWidth = 1.2;
+        ctx.stroke();
+
+        // Hands
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(42.5, 3);
+        ctx.lineTo(42.5, -4);
+        ctx.moveTo(42.5, 3);
+        ctx.lineTo(48, 3);
+        ctx.stroke();
+
+        // Brass top finial
+        ctx.fillStyle = '#f59e0b';
+        ctx.beginPath();
+        ctx.arc(42.5, -14, 2.5, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+
+        ctx.restore();
+      },
+    },
+
     // --- LAYER 3: Workshop Workbench & Wall Shelves ---
     {
       id: 'attic_bench',

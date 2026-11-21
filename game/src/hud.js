@@ -50,7 +50,7 @@ export class HUD {
     // --- MID-LEFT: Found Counter & Pips ---
     // "Found 2/5 · 3 left"
     ctx.save();
-    ctx.translate(370, 16);
+    ctx.translate(330, 16);
 
     const found = levelState.foundCount;
     const total = levelState.differences.length;
@@ -86,9 +86,9 @@ export class HUD {
     }
     ctx.restore();
 
-    // --- CENTER-RIGHT: Time Bar & Countdown ---
+    // --- CENTER: Time Bar & Countdown ---
     ctx.save();
-    ctx.translate(590, 16);
+    ctx.translate(535, 16);
 
     const timeRatio = Math.max(0, Math.min(1, levelState.timeLeft / levelState.timeTotal));
     const isCritical = levelState.timeLeft < 15;
@@ -110,7 +110,7 @@ export class HUD {
     ctx.fillText(`TIME: ${timeFormatted}`, 0, 16);
 
     // Progress bar frame
-    const barW = 210;
+    const barW = 190;
     const barH = 12;
     const barX = 0;
     const barY = 24;
@@ -126,7 +126,6 @@ export class HUD {
     // Inner progress fill
     const fillW = Math.max(0, barW * timeRatio);
     if (fillW > 0) {
-      // Pulsing effect if critical (< 15s)
       if (isCritical) {
         const pulse = (Math.sin(Date.now() / 120) + 1) * 0.5;
         ctx.shadowColor = 'rgba(239, 68, 68, 0.8)';
@@ -141,15 +140,15 @@ export class HUD {
 
     ctx.restore();
 
-    // --- RIGHT SECTION: Score, Combo, Hint, Mute ---
+    // --- RIGHT SECTION: Score, Combo, Hint Pill, Sound Pill, Pause Pill ---
     ctx.save();
-    ctx.translate(850, 16);
+    ctx.translate(760, 14);
 
-    // Score display
+    // Score display with en-US locale (e.g. 3,450)
     ctx.textAlign = 'left';
-    ctx.font = 'bold 16px system-ui, sans-serif';
+    ctx.font = 'bold 15px system-ui, sans-serif';
     ctx.fillStyle = c.textPrimary;
-    ctx.fillText(`SCORE: ${levelState.score.toLocaleString()}`, 0, 16);
+    ctx.fillText(`SCORE: ${levelState.score.toLocaleString('en-US')}`, 0, 16);
 
     // Combo multiplier indicator
     if (levelState.combo > 1) {
@@ -162,30 +161,48 @@ export class HUD {
       ctx.fillText('STREAK: 1x', 0, 32);
     }
 
-    // Hint Button [H]
+    // Hint Button Pill [H]
     const hintCharges = levelState.hintsRemaining;
     const hintX = 145;
     ctx.fillStyle = hintCharges > 0 ? '#1e293b' : '#111827';
     ctx.strokeStyle = hintCharges > 0 ? c.accentGold : '#374151';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.roundRect(hintX, 6, 115, 30, 6);
+    ctx.roundRect(hintX, 6, 115, 32, 6);
     ctx.fill();
     ctx.stroke();
 
     ctx.textAlign = 'center';
     ctx.font = 'bold 12px system-ui, sans-serif';
     ctx.fillStyle = hintCharges > 0 ? c.accentGoldLight : c.textMuted;
-    ctx.fillText(`HINT [H] (${hintCharges})`, hintX + 57, 24);
+    ctx.fillText(`HINT [H] (${hintCharges})`, hintX + 57, 26);
 
-    // Mute [M] & Pause [P]
-    const controlsX = 275;
-    ctx.font = '11px system-ui, sans-serif';
+    // Sound Toggle Button Pill [M]
+    const soundX = 275;
+    ctx.fillStyle = audioMuted ? '#450a0a' : '#1e293b';
+    ctx.strokeStyle = audioMuted ? '#ef4444' : '#475569';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(soundX, 6, 95, 32, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.font = 'bold 11px system-ui, sans-serif';
     ctx.fillStyle = audioMuted ? '#f87171' : c.textSecondary;
-    ctx.fillText(audioMuted ? '[M] MUTED' : '[M] SOUND', controlsX, 18);
+    ctx.fillText(audioMuted ? '[M] MUTED' : '[M] SOUND', soundX + 47, 26);
 
-    ctx.fillStyle = isPaused ? c.accentGold : c.textSecondary;
-    ctx.fillText(isPaused ? '[P] RESUME' : '[P] PAUSE', controlsX, 32);
+    // Pause Toggle Button Pill [P]
+    const pauseX = 380;
+    ctx.fillStyle = isPaused ? '#451a03' : '#1e293b';
+    ctx.strokeStyle = isPaused ? c.accentGold : '#475569';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(pauseX, 6, 95, 32, 6);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.fillStyle = isPaused ? c.accentGoldLight : c.textSecondary;
+    ctx.fillText(isPaused ? '[P] RESUME' : '[P] PAUSE', pauseX + 47, 26);
 
     ctx.restore();
 
