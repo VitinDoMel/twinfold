@@ -114,6 +114,33 @@ export const HARBOR_CANDIDATE_DIFFERENCES = [
     radius: 26,
     type: 'visibility', // rope coil present on left, absent on right
   },
+  {
+    id: 'diff_sleeping_cat',
+    name: 'Sleeping Dock Kitten',
+    description: 'Calico harbor kitten curled asleep on a burlap sack',
+    x: 145,
+    y: 545,
+    radius: 26,
+    type: 'color', // calico with orange ears on left, sleeping gray tabby on right
+  },
+  {
+    id: 'diff_fish_box',
+    name: 'Fresh Herring Fish Crate',
+    description: 'Wooden market crate loaded with silvery fresh catch and ice',
+    x: 310,
+    y: 544,
+    radius: 28,
+    type: 'visibility', // filled with fresh fish on left, empty wooden box on right
+  },
+  {
+    id: 'diff_rusted_anchor',
+    name: 'Pier Rusted Iron Anchor',
+    description: 'Heavy maritime anchor with double stock ring resting against the dock',
+    x: 485,
+    y: 545,
+    radius: 28,
+    type: 'detail', // double stock ring on left, single ring on right
+  },
 ];
 
 export class HarborScene {
@@ -584,6 +611,115 @@ export class HarborScene {
     const lanternDiff = hasDiff('diff_dock_lantern');
     const isLanternLit = !lanternDiff;
     Painter.lantern(ctx, postX + 24, postY + 28, 1.15, '#f6ad55', isLanternLit);
+
+    // -------------------------------------------------------------
+    // 11. LOWER PIER LIFE & PROPS (y: 515 to 585 — 25% lower pier area)
+    // -------------------------------------------------------------
+    // Draped woven green fishing net with cork floats
+    ctx.save();
+    Painter.ellipse(ctx, 75, 542, 38, 18, -0.1, '#1b3b2b', '#0d2016', 1.2);
+    // Net mesh lines
+    for (let netX = 46; netX <= 104; netX += 10) {
+      Painter.line(ctx, netX, 532, netX + 6, 552, 'rgba(74, 222, 128, 0.35)', 1);
+      Painter.line(ctx, netX + 6, 532, netX, 552, 'rgba(74, 222, 128, 0.35)', 1);
+    }
+    // Cork floats along net edge
+    const corks = [
+      { x: 45, y: 535 }, { x: 62, y: 546 }, { x: 80, y: 552 }, { x: 98, y: 548 }
+    ];
+    for (const c of corks) {
+      Painter.ellipse(ctx, c.x, c.y, 4, 2.5, 0.2, '#d97706', '#78350f', 1);
+    }
+    ctx.restore();
+
+    // Difference 13: Sleeping Dock Kitten on Burlap Sack
+    const catDiff = hasDiff('diff_sleeping_cat');
+    const sackX = 145;
+    const sackY = 548;
+    // Burlap sack cushion
+    Painter.ellipse(ctx, sackX, sackY, 22, 12, 0.05, '#92400e', '#451a03', 1.2);
+    Painter.line(ctx, sackX - 14, sackY - 2, sackX + 14, sackY - 2, '#78350f', 1);
+
+    // Sleeping Cat Body
+    const catBodyColor = catDiff ? '#64748b' : '#f8fafc'; // gray tabby on mutated right vs calico white on left
+    const catSpotColor = catDiff ? '#334155' : '#ea580c'; // dark gray stripes vs orange calico patch
+    Painter.ellipse(ctx, sackX - 2, sackY - 3, 12, 8, -0.15, catBodyColor, '#1e293b', 1.2);
+    Painter.circle(ctx, sackX + 7, sackY - 4, 6, catBodyColor, '#1e293b', 1.2); // Head
+    // Ears
+    Painter.polygon(ctx, [[sackX + 5, sackY - 8], [sackX + 8, sackY - 12], [sackX + 10, sackY - 8]], catSpotColor);
+    Painter.polygon(ctx, [[sackX + 10, sackY - 7], [sackX + 13, sackY - 11], [sackX + 13, sackY - 6]], catSpotColor);
+    // Spot patch on body
+    Painter.circle(ctx, sackX - 4, sackY - 4, 4, catSpotColor);
+    // Curled Tail
+    Painter.line(ctx, sackX - 12, sackY - 2, sackX - 16, sackY - 7, catBodyColor, 2);
+
+    // Wooden Water Bucket with metal hoop
+    const bktX = 215;
+    const bktY = 544;
+    Painter.polygon(ctx, [
+      [bktX - 10, bktY - 12],
+      [bktX + 10, bktY - 12],
+      [bktX + 8, bktY + 10],
+      [bktX - 8, bktY + 10]
+    ], '#78350f', '#291104', 1.2);
+    // Iron bucket hoops
+    Painter.line(ctx, bktX - 9, bktY - 6, bktX + 9, bktY - 6, '#334155', 1.5);
+    Painter.line(ctx, bktX - 8, bktY + 4, bktX + 8, bktY + 4, '#334155', 1.5);
+    // Water surface inside bucket
+    Painter.ellipse(ctx, bktX, bktY - 12, 9, 3, 0, '#38bdf8');
+    // Metal arched handle
+    Painter.circle(ctx, bktX, bktY - 13, 9, null, '#475569', 1.5);
+
+    // Difference 14: Fresh Fish Crate (Fresh silver catch vs empty box)
+    const fishBoxDiff = hasDiff('diff_fish_box');
+    const fboxX = 310;
+    const fboxY = 542;
+    Painter.roundedRect(ctx, fboxX - 22, fboxY - 12, 44, 26, 2, '#9a3412', '#431407', 1.4);
+    Painter.line(ctx, fboxX - 20, fboxY + 1, fboxX + 20, fboxY + 1, '#7c2d12', 1);
+
+    if (!fishBoxDiff) {
+      // Shimmering fresh silvery fish nestled in crushed ice
+      Painter.roundedRect(ctx, fboxX - 18, fboxY - 10, 36, 12, 2, '#e0f2fe'); // Ice shavings
+      // 3 fresh silver fish
+      const fishColors = ['#94a3b8', '#64748b', '#cbd5e0'];
+      for (let fi = 0; fi < 3; fi++) {
+        const fx = fboxX - 10 + fi * 9;
+        const fy = fboxY - 6 + (fi % 2) * 2;
+        Painter.ellipse(ctx, fx, fy, 6, 2.5, 0.15, fishColors[fi], '#1e293b', 0.8);
+        Painter.circle(ctx, fx + 4, fy - 0.5, 0.8, '#0f172a'); // Fish eye
+        Painter.polygon(ctx, [[fx - 6, fy], [fx - 9, fy - 2], [fx - 9, fy + 2]], fishColors[fi]); // Tail fin
+      }
+    } else {
+      // Empty dark interior
+      Painter.roundedRect(ctx, fboxX - 18, fboxY - 10, 36, 12, 1, '#451a03');
+    }
+
+    // Tackle Box & spilled brass nails
+    const tboxX = 405;
+    const tboxY = 554;
+    Painter.roundedRect(ctx, tboxX - 12, tboxY - 7, 24, 14, 2, '#047857', '#064e3b', 1.2);
+    Painter.roundedRect(ctx, tboxX - 4, tboxY - 9, 8, 3, 1, '#d97706'); // Brass handle
+    // Brass nails on plank
+    for (let ni = 0; ni < 4; ni++) {
+      Painter.line(ctx, tboxX + 16 + ni * 4, tboxY + 2, tboxX + 19 + ni * 4, tboxY + 5, '#f59e0b', 1.2);
+    }
+
+    // Difference 15: Heavy Rusted Anchor (Double stock ring vs single ring)
+    const anchorDiff = hasDiff('diff_rusted_anchor');
+    const ancX = 485;
+    const ancY = 544;
+    // Central shank
+    Painter.line(ctx, ancX, ancY - 18, ancX, ancY + 16, '#374151', 3.5);
+    // Stock crossbar
+    Painter.line(ctx, ancX - 14, ancY - 10, ancX + 14, ancY - 10, '#4b5563', 3);
+    // Curved arms and flukes
+    Painter.circle(ctx, ancX, ancY + 10, 14, null, '#374151', 3.5);
+    // Top shackle ring
+    Painter.circle(ctx, ancX, ancY - 18, 5, null, '#4b5563', 2);
+    if (!anchorDiff) {
+      // Extra heavy reinforcement ring on top
+      Painter.circle(ctx, ancX, ancY - 24, 4, null, '#d97706', 1.8);
+    }
 
     ctx.restore();
   }

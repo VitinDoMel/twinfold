@@ -4,6 +4,9 @@ import { DifferenceEngine } from './differences.js';
 import { PRNG } from './rng.js';
 import { SCORING, VIEW } from './config.js';
 import { HARBOR_CANDIDATE_DIFFERENCES } from './scenes/harbor.js';
+import { BAZAAR_CANDIDATE_DIFFERENCES } from './scenes/bazaar.js';
+import { GREENHOUSE_CANDIDATE_DIFFERENCES } from './scenes/greenhouse.js';
+import { ATTIC_CANDIDATE_DIFFERENCES } from './scenes/attic.js';
 
 export class LevelState {
   /**
@@ -33,8 +36,14 @@ export class LevelState {
     let candidatePool = [];
     if (levelDef.key === 'harbor') {
       candidatePool = HARBOR_CANDIDATE_DIFFERENCES;
+    } else if (levelDef.key === 'bazaar') {
+      candidatePool = BAZAAR_CANDIDATE_DIFFERENCES;
+    } else if (levelDef.key === 'greenhouse') {
+      candidatePool = GREENHOUSE_CANDIDATE_DIFFERENCES;
+    } else if (levelDef.key === 'attic') {
+      candidatePool = ATTIC_CANDIDATE_DIFFERENCES;
     } else {
-      candidatePool = HARBOR_CANDIDATE_DIFFERENCES; // Fallback for testing
+      candidatePool = HARBOR_CANDIDATE_DIFFERENCES;
     }
 
     // Select differences deterministically
