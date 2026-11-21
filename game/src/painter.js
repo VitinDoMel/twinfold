@@ -608,4 +608,174 @@ export class Painter {
 
     ctx.restore();
   }
+
+  // --- EXTENDED VECTOR PRIMITIVES FOR ADVANCED SCENES ---
+
+  static gear(ctx, x, y, radius, teeth = 12, toothDepth = 6, opts = {}) {
+    const {
+      color = '#d97706',
+      strokeColor = '#78350f',
+      holeRadius = radius * 0.28,
+      spokes = 5,
+      rotation = 0,
+    } = opts;
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+
+    ctx.fillStyle = color;
+    ctx.strokeStyle = strokeColor;
+    ctx.lineWidth = 1.8;
+
+    // Outer gear teeth perimeter
+    ctx.beginPath();
+    const totalSteps = teeth * 2;
+    for (let i = 0; i < totalSteps; i++) {
+      const angle = (i * Math.PI * 2) / totalSteps;
+      const r = i % 2 === 0 ? radius : radius - toothDepth;
+      const px = Math.cos(angle) * r;
+      const py = Math.sin(angle) * r;
+      if (i === 0) ctx.moveTo(px, py);
+      else ctx.lineTo(px, py);
+    }
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    // Spokes cutouts
+    if (spokes > 0 && holeRadius > 6) {
+      ctx.fillStyle = '#1c1917';
+      const innerRimR = radius - toothDepth - 4;
+      const spokeAngle = (Math.PI * 2) / spokes;
+      for (let s = 0; s < spokes; s++) {
+        const startA = s * spokeAngle + 0.2;
+        const endA = (s + 1) * spokeAngle - 0.2;
+        ctx.beginPath();
+        ctx.arc(0, 0, innerRimR, startA, endA);
+        ctx.arc(0, 0, holeRadius + 4, endA, startA, true);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+      }
+    }
+
+    // Center brass boss hub
+    ctx.fillStyle = '#b45309';
+    ctx.beginPath();
+    ctx.arc(0, 0, holeRadius, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+
+    // Center axle shaft hole
+    ctx.fillStyle = '#0f172a';
+    ctx.beginPath();
+    ctx.arc(0, 0, Math.max(3, holeRadius * 0.45), 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  static flask(ctx, x, y, scale = 1, opts = {}) {
+    const {
+      liquidColor = '#06b6d4',
+      liquidRatio = 0.55,
+      bubbles = true,
+      glassColor = 'rgba(255, 255, 255, 0.15)',
+    } = opts;
+
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.scale(scale, scale);
+
+    // Erlenmeyer Flask shape: neck (-6,-30 to 6,-30) down to bulb (-22, 18 to 22, 18)
+    // Clip liquid
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(-6, -28);
+    ctx.lineTo(-6, -10);
+    ctx.lineTo(-24, 18);
+    ctx.lineTo(24, 18);
+    ctx.lineTo(6, -10);
+    ctx.lineTo(6, -28);
+    ctx.closePath();
+    ctx.clip();
+
+    // Liquid fill
+    const liquidY = 18 - 36 * liquidRatio;
+    ctx.fillStyle = liquidColor;
+    ctx.fillRect(-26, liquidY, 52, 40);
+
+    // Meniscus
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.beginPath();
+    ctx.ellipse(0, liquidY, 18 * liquidRatio + 4, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bubbles
+    if (bubbles) {
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+      ctx.beginPath();
+      ctx.arc(-4, liquidY + 8, 2, 0, Math.PI * 2);
+      ctx.arc(6, liquidY + 14, 2.5, 0, Math.PI * 2);
+      ctx.arc(-2, liquidY + 20, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+
+    // Glass body outline and highlights
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    ctx.moveTo(-6, -28);
+    ctx.lineTo(-6, -10);
+    ctx.lineTo(-24, 18);
+    ctx.lineTo(24, 18);
+    ctx.lineTo(6, -10);
+    ctx.lineTo(6, -28);
+    ctx.closePath();
+    ctx.stroke();
+
+    // Flask lip rim
+    ctx.fillStyle = '#64748b';
+    ctx.fillRect(-8, -32, 16, 4);
+    ctx.strokeRect(-8, -32, 16, 4);
+
+    // Glass reflection sheen
+    ctx.strokeStyle = glassColor;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(-16, 14);
+    ctx.lineTo(-5, -6);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  static arch(ctx, x, y, w, h, opts = {}) {
+    const {
+      wallColor = '#d97706',
+      interiorColor = '#1e1b4b',
+      borderWidth = 3,
+      borderColor = '#78350f',
+    } = opts;
+
+    ctx.save();
+    // Inner archway opening
+    ctx.fillStyle = interiorColor;
+    ctx.beginPath();
+    ctx.moveTo(x, y + h);
+    ctx.lineTo(x, y + w * 0.5);
+    ctx.quadraticCurveTo(x + w * 0.5, y, x + w, y + w * 0.5);
+    ctx.lineTo(x + w, y + h);
+    ctx.closePath();
+    ctx.fill();
+
+    if (borderWidth > 0) {
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = borderWidth;
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
 }

@@ -1,43 +1,80 @@
 // game/src/game.js
-// Main gameplay state machine: rendering, panel clipping, update loop, and screen overlays.
+// Main gameplay state machine: rendering, panel clipping, update loop, screens, and campaign progression.
 
 import { CANVAS_WIDTH, CANVAS_HEIGHT, PANELS, LEVELS } from './config.js';
 import { UI_COLORS } from './palette.js';
 import { RNG } from './rng.js';
 import { Level } from './level.js';
 import { buildHarborScene } from './scenes/harbor.js';
+import { buildBazaarScene } from './scenes/bazaar.js';
+import { buildGreenhouseScene } from './scenes/greenhouse.js';
+import { buildAtticScene } from './scenes/attic.js';
 import { HUD } from './hud.js';
 import { EffectsManager } from './effects.js';
 import { sound } from './audio.js';
 import { DifferenceEngine } from './differences.js';
+import { ScreenManager } from './screens.js';
 
 export class Game {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
 
-    // Parse URL seed parameter if given
+    // Parse URL parameters
     const params = new URLSearchParams(window.location.search);
     const seedParam = params.get('seed') || '1337';
     this.rng = new RNG(seedParam);
 
     this.effects = new EffectsManager();
+    this.screens = new ScreenManager();
+
     this.currentLevelIndex = 0;
-    this.state = 'playing'; // 'title' | 'playing' | 'paused' | 'level_clear' | 'game_over'
+    this.selectedStageIndex = 0;
+    this.state = 'title'; // 'title' | 'playing' | 'paused' | 'level_clear' | 'game_over' | 'victory'
     this.isPaused = false;
+
+    this.campaignScore = 0;
+    this.stageRecords = [
+      { stars: 0, highScore: 0 },
+      { stars: 0, highScore: 0 },
+      { stars: 0, highScore: 0 },
+      { stars: 0, highScore: 0 },
+    ];
 
     this.level = null;
     this.lastTickWarning = 0;
 
-    this._startLevel(0);
+    // Check if URL has direct stage param (e.g. ?stage=2)
+    const stageParam = params.get('stage');
+    if (stageParam !== null) {
+      const parsedStage = parseInt(stageParam, 10) - 1;
+      if (parsedStage >= 0 && parsedStage < LEVELS.length) {
+        this.startLevel(parsedStage);
+      }
+    }
   }
 
-  _startLevel(levelIndex) {
+  _buildSceneForLevel(levelIndex) {
+    switch (levelIndex) {
+      case 0:
+        return buildHarborScene(this.rng);
+      case 1:
+        return buildBazaarScene(this.rng);
+      case 2:
+        return buildGreenhouseScene(this.rng);
+      case 3:
+        return buildAtticScene(this.rng);
+      default:
+        return buildHarborScene(this.rng);
+    }
+  }
+
+  startLevel(levelIndex) {
     this.currentLevelIndex = levelIndex;
+    this.selectedStageIndex = levelIndex;
     const levelConfig = LEVELS[levelIndex] || LEVELS[0];
 
-    // For Level 1, build harbor scene
-    const sceneData = buildHarborScene(this.rng);
+    const sceneData = this._buildSceneForLevel(levelIndex);
     this.level = new Level(levelConfig, sceneData, this.rng);
     this.state = 'playing';
     this.isPaused = false;
@@ -49,6 +86,8 @@ export class Game {
     if (action === 'pause') {
       if (this.state === 'playing') {
         this.isPaused = !this.isPaused;
+      } else if (this.isPaused) {
+        this.isPaused = false;
       }
     } else if (action === 'mute') {
       sound.toggleMute();
@@ -59,37 +98,108 @@ export class Game {
           sound.playHint();
         }
       }
+    } else if (action === 'confirm') {
+      // Enter or Space pressed
+      if (this.state === 'title') {
+        this.startLevel(this.selectedStageIndex);
+      } else if (this.state === 'paused') {
+        this.isPaused = false;
+      } else if (this.state === 'level_clear') {
+        this.advanceNext();
+      } else if (this.state === 'game_over') {
+        this.startLevel(this.currentLevelIndex);
+      } else if (this.state === 'victory') {
+        this.state = 'title';
+      }
+    } else if (action === 'quit') {
+      this.state = 'title';
+      this.isPaused = false;
+    } else if (action.startsWith('stage_')) {
+      const idx = parseInt(action.replace('stage_', ''), 10);
+      if (idx >= 0 && idx < LEVELS.length) {
+        this.selectedStageIndex = idx;
+        if (this.state === 'title') {
+          this.startLevel(idx);
+        }
+      }
+    }
+  }
+
+  advanceNext() {
+    if (this.currentLevelIndex < LEVELS.length - 1) {
+      this.startLevel(this.currentLevelIndex + 1);
+    } else {
+      this.state = 'victory';
+      sound.playLevelClear();
     }
   }
 
   handleClick(cx, cy) {
     sound.init();
 
-    // Check HUD Hint Button click
-    if (cx >= 995 && cx <= 1110 && cy >= 22 && cy <= 52) {
-      this.handleAction('hint');
-      return;
-    }
-    // Check HUD Mute click
-    if (cx >= 1120 && cx <= 1190 && cy >= 10 && cy <= 45) {
-      this.handleAction('mute');
-      return;
-    }
-    // Check HUD Pause click
-    if (cx >= 1195 && cx <= 1260 && cy >= 10 && cy <= 45) {
-      this.handleAction('pause');
+    // 1. Title Screen card clicks
+    if (this.state === 'title') {
+      const cardW = 270;
+      const cardH = 370;
+      const gap = 24;
+      const totalW = 4 * cardW + 3 * gap;
+      const startX = (CANVAS_WIDTH - totalW) / 2;
+      const cardY = 150;
+
+      for (let i = 0; i < LEVELS.length; i++) {
+        const cardX = startX + i * (cardW + gap);
+        if (cx >= cardX && cx <= cardX + cardW && cy >= cardY && cy <= cardY + cardH) {
+          this.selectedStageIndex = i;
+          this.startLevel(i);
+          return;
+        }
+      }
+
+      // Anywhere else on title screen starts selected stage
+      this.startLevel(this.selectedStageIndex);
       return;
     }
 
-    if (this.state === 'level_clear' || this.state === 'game_over') {
-      // Click restarts or advances
-      this._startLevel(0);
+    // 2. Victory Screen click returns to title
+    if (this.state === 'victory') {
+      this.state = 'title';
       return;
+    }
+
+    // 3. Level Clear click advances to next level
+    if (this.state === 'level_clear') {
+      this.advanceNext();
+      return;
+    }
+
+    // 4. Game Over click restarts current level
+    if (this.state === 'game_over') {
+      this.startLevel(this.currentLevelIndex);
+      return;
+    }
+
+    // 5. HUD clicks during gameplay
+    if (cy <= 72) {
+      // Hint button click
+      if (cx >= 995 && cx <= 1110 && cy >= 18 && cy <= 54) {
+        this.handleAction('hint');
+        return;
+      }
+      // Mute toggle click
+      if (cx >= 1120 && cx <= 1190 && cy >= 10 && cy <= 45) {
+        this.handleAction('mute');
+        return;
+      }
+      // Pause toggle click
+      if (cx >= 1195 && cx <= 1260 && cy >= 10 && cy <= 45) {
+        this.handleAction('pause');
+        return;
+      }
     }
 
     if (this.isPaused || this.state !== 'playing') return;
 
-    // Check if clicked in Left Panel
+    // 6. Panel Clicks
     const inLeft = DifferenceEngine.isInsidePanel(cx, cy, PANELS.left);
     const inRight = DifferenceEngine.isInsidePanel(cx, cy, PANELS.right);
 
@@ -105,6 +215,18 @@ export class Game {
 
           if (result.completed) {
             sound.playLevelClear();
+            this.campaignScore += this.level.score;
+
+            // Update stage record stars
+            const timeRatio = this.level.timeLeft / this.level.timeTotal;
+            let stars = 1;
+            if (timeRatio > 0.4 && this.level.mistakesCount <= 2) stars = 3;
+            else if (timeRatio > 0.15 && this.level.mistakesCount <= 4) stars = 2;
+
+            const rec = this.stageRecords[this.currentLevelIndex];
+            rec.stars = Math.max(rec.stars, stars);
+            rec.highScore = Math.max(rec.highScore, this.level.score);
+
             this.state = 'level_clear';
           }
         } else if (result.type === 'miss') {
@@ -123,10 +245,10 @@ export class Game {
   update(dt) {
     if (this.isPaused) return;
 
-    if (this.state === 'playing') {
+    if (this.state === 'playing' && this.level) {
       this.level.update(dt);
 
-      // Audio tick warning under 10 seconds
+      // Warning audio ticking under 10 seconds
       if (this.level.timeLeft <= 10 && this.level.timeLeft > 0) {
         const currentSec = Math.floor(this.level.timeLeft);
         if (currentSec !== this.lastTickWarning) {
@@ -148,10 +270,25 @@ export class Game {
     const ctx = this.ctx;
     ctx.save();
 
-    // Screen shake offset from effects
+    // Screen shake from effects
     ctx.translate(this.effects.shakeOffsetX, this.effects.shakeOffsetY);
 
-    // Canvas background
+    if (this.state === 'title') {
+      this.screens.renderTitle(ctx, this.selectedStageIndex, this.stageRecords);
+      HUD.renderCrosshair(ctx, cursorX, cursorY, isKeyboard);
+      ctx.restore();
+      return;
+    }
+
+    if (this.state === 'victory') {
+      const totalStars = this.stageRecords.reduce((acc, r) => acc + r.stars, 0);
+      this.screens.renderVictory(ctx, this.campaignScore, totalStars);
+      HUD.renderCrosshair(ctx, cursorX, cursorY, isKeyboard);
+      ctx.restore();
+      return;
+    }
+
+    // Normal gameplay canvas background
     ctx.fillStyle = UI_COLORS.backdrop;
     ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
 
@@ -159,22 +296,23 @@ export class Game {
     this._renderScenePanel(PANELS.left, false);
     this._renderScenePanel(PANELS.right, true);
 
-    // Render Panel Frames and brass corner brackets
+    // Panel Frames and aesthetic brass brackets
     HUD.renderPanelFrames(ctx);
 
-    // Render Top HUD Status Bar
+    // Top HUD Status Bar
     HUD.render(ctx, this.level, sound.muted, this.isPaused);
 
-    // Overlays (Paused, Level Clear, Game Over)
+    // Overlays
     if (this.isPaused) {
-      this._renderPauseOverlay();
+      this.screens.renderPause(ctx);
     } else if (this.state === 'level_clear') {
-      this._renderLevelClearOverlay();
+      const nextAvailable = this.currentLevelIndex < LEVELS.length - 1;
+      this.screens.renderLevelClear(ctx, this.level, nextAvailable);
     } else if (this.state === 'game_over') {
-      this._renderGameOverOverlay();
+      this.screens.renderGameOver(ctx, this.level);
     }
 
-    // Render crosshair cursor
+    // Crosshair cursor
     HUD.renderCrosshair(ctx, cursorX, cursorY, isKeyboard);
 
     ctx.restore();
@@ -184,7 +322,6 @@ export class Game {
     const ctx = this.ctx;
     ctx.save();
 
-    // Clip to panel geometry
     ctx.beginPath();
     ctx.roundRect(panel.x, panel.y, panel.width, panel.height, 8);
     ctx.clip();
@@ -206,112 +343,13 @@ export class Game {
     // Render found markers and ghost outlines
     this.effects.renderFoundMarkers(ctx, this.level.differences, isRightPanel);
 
-    // Render dynamic ripples, sparkles, and error indicators
+    // Render ripples, sparkles, and error indicators
     this.effects.renderPanelOverlays(ctx);
 
     // Render active hint target on both panels
     if (this.level.activeHint) {
       this.effects.renderActiveHint(ctx, this.level.activeHint);
     }
-
-    ctx.restore();
-  }
-
-  _renderPauseOverlay() {
-    const ctx = this.ctx;
-    ctx.save();
-    ctx.fillStyle = 'rgba(11, 13, 19, 0.75)';
-    ctx.fillRect(0, 72, CANVAS_WIDTH, CANVAS_HEIGHT - 72);
-
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 36px system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('PAUSED', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 10);
-
-    ctx.font = '16px system-ui, sans-serif';
-    ctx.fillStyle = UI_COLORS.textSecondary;
-    ctx.fillText('Press [P] or Space to resume', CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 30);
-    ctx.restore();
-  }
-
-  _renderLevelClearOverlay() {
-    const ctx = this.ctx;
-    ctx.save();
-    ctx.fillStyle = 'rgba(11, 13, 19, 0.45)'; // Soft darkening keeping scene visible
-    ctx.fillRect(0, 72, CANVAS_WIDTH, CANVAS_HEIGHT - 72);
-
-    // Dialog card
-    const cardW = 460;
-    const cardH = 240;
-    const cardX = (CANVAS_WIDTH - cardW) / 2;
-    const cardY = (CANVAS_HEIGHT - cardH) / 2 + 20;
-
-    ctx.fillStyle = 'rgba(21, 25, 34, 0.95)';
-    ctx.beginPath();
-    ctx.roundRect(cardX, cardY, cardW, cardH, 12);
-    ctx.fill();
-    ctx.strokeStyle = '#10b981';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#10b981';
-    ctx.font = 'bold 28px system-ui, sans-serif';
-    ctx.fillText('STAGE COMPLETE!', CANVAS_WIDTH / 2, cardY + 45);
-
-    // Stars
-    ctx.fillStyle = '#fbbf24';
-    ctx.font = '26px system-ui, sans-serif';
-    ctx.fillText('★ ★ ★', CANVAS_WIDTH / 2, cardY + 80);
-
-    // Stats
-    ctx.font = '16px system-ui, sans-serif';
-    ctx.fillStyle = '#f8fafc';
-    ctx.fillText(`Final Score: ${this.level.score.toLocaleString()}`, CANVAS_WIDTH / 2, cardY + 120);
-    ctx.fillStyle = UI_COLORS.textSecondary;
-    ctx.font = '14px system-ui, sans-serif';
-    ctx.fillText(`All ${this.level.differences.length} differences spotted!`, CANVAS_WIDTH / 2, cardY + 148);
-
-    // Prompt
-    ctx.fillStyle = UI_COLORS.accentAmber;
-    ctx.font = 'bold 15px system-ui, sans-serif';
-    ctx.fillText('Press Enter or Click to Replay Stage', CANVAS_WIDTH / 2, cardY + 195);
-
-    ctx.restore();
-  }
-
-  _renderGameOverOverlay() {
-    const ctx = this.ctx;
-    ctx.save();
-    ctx.fillStyle = 'rgba(11, 13, 19, 0.65)';
-    ctx.fillRect(0, 72, CANVAS_WIDTH, CANVAS_HEIGHT - 72);
-
-    const cardW = 440;
-    const cardH = 220;
-    const cardX = (CANVAS_WIDTH - cardW) / 2;
-    const cardY = (CANVAS_HEIGHT - cardH) / 2 + 20;
-
-    ctx.fillStyle = 'rgba(21, 25, 34, 0.95)';
-    ctx.beginPath();
-    ctx.roundRect(cardX, cardY, cardW, cardH, 12);
-    ctx.fill();
-    ctx.strokeStyle = '#ef4444';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#ef4444';
-    ctx.font = 'bold 28px system-ui, sans-serif';
-    ctx.fillText('TIME EXPIRED', CANVAS_WIDTH / 2, cardY + 45);
-
-    ctx.font = '15px system-ui, sans-serif';
-    ctx.fillStyle = '#f8fafc';
-    ctx.fillText(`Found: ${this.level.foundCount}/${this.level.differences.length} differences`, CANVAS_WIDTH / 2, cardY + 95);
-    ctx.fillText(`Score: ${this.level.score.toLocaleString()}`, CANVAS_WIDTH / 2, cardY + 122);
-
-    ctx.fillStyle = UI_COLORS.accentAmber;
-    ctx.font = 'bold 15px system-ui, sans-serif';
-    ctx.fillText('Press Enter or Click to Try Again', CANVAS_WIDTH / 2, cardY + 175);
 
     ctx.restore();
   }

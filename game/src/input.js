@@ -59,8 +59,19 @@ export class InputManager {
         if (this.actionHandler) this.actionHandler('pause');
       } else if (e.code === 'KeyM') {
         if (this.actionHandler) this.actionHandler('mute');
+      } else if (e.code === 'Escape' || e.code === 'KeyQ') {
+        if (this.actionHandler) this.actionHandler('quit');
+      } else if (e.code === 'Digit1') {
+        if (this.actionHandler) this.actionHandler('stage_0');
+      } else if (e.code === 'Digit2') {
+        if (this.actionHandler) this.actionHandler('stage_1');
+      } else if (e.code === 'Digit3') {
+        if (this.actionHandler) this.actionHandler('stage_2');
+      } else if (e.code === 'Digit4') {
+        if (this.actionHandler) this.actionHandler('stage_3');
       } else if (e.code === 'Enter' || e.code === 'Space') {
         e.preventDefault();
+        if (this.actionHandler) this.actionHandler('confirm');
         if (this.clickHandler) {
           this.clickHandler(this.cursorX, this.cursorY);
         }
