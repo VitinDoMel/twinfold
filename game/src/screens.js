@@ -2,6 +2,10 @@
 
 import { Painter } from './painter.js';
 import { VIEW, LEVELS } from './config.js';
+import { HarborScene } from './scenes/harbor.js';
+import { BazaarScene } from './scenes/bazaar.js';
+import { GreenhouseScene } from './scenes/greenhouse.js';
+import { AtticScene } from './scenes/attic.js';
 
 export class ScreenRenderer {
   /**
@@ -87,27 +91,42 @@ export class ScreenRenderer {
         align: 'left',
       });
 
-      // Stylized scene thumbnail graphic placeholder
-      Painter.roundedRect(ctx, cx + 18, cardY + 120, cardW - 36, 70, 6, '#0f131a', '#1e293b', 1);
-      // Thumbnail details
-      if (i === 0) {
-        // Harbor thumbnail (lighthouse silhouette)
-        Painter.polygon(ctx, [[cx + 120, cardY + 130], [cx + 140, cardY + 185], [cx + 100, cardY + 185]], '#334155');
-        Painter.circle(ctx, cx + 120, cardY + 130, 4, '#ecc94b');
-      } else if (i === 1) {
-        // Bazaar thumbnail (crescent moon + lantern)
-        Painter.circle(ctx, cx + 80, cardY + 155, 14, '#fde68a');
-        Painter.circle(ctx, cx + 86, cardY + 152, 12, '#0f131a');
-        Painter.circle(ctx, cx + 160, cardY + 155, 12, 'rgba(245, 158, 11, 0.4)');
-      } else if (i === 2) {
-        // Greenhouse thumbnail (retort flask + leaves)
-        Painter.circle(ctx, cx + 120, cardY + 165, 15, '#10b981');
-        Painter.line(ctx, cx + 120, cardY + 165, cx + 120, cardY + 135, '#334155', 3);
-      } else {
-        // Attic thumbnail (gear silhouette)
-        Painter.circle(ctx, cx + 120, cardY + 155, 16, '#d97706');
-        Painter.circle(ctx, cx + 120, cardY + 155, 6, '#0f131a');
+      // Real scaled scene miniature preview
+      const thumbX = cx + 18;
+      const thumbY = cardY + 118;
+      const thumbW = cardW - 36;
+      const thumbH = 74;
+
+      ctx.save();
+      ctx.beginPath();
+      Painter.roundedRect(ctx, thumbX, thumbY, thumbW, thumbH, 6, '#0a0d14', '#334155', 1.5);
+      ctx.clip();
+
+      const previewScenes = [
+        new HarborScene(),
+        new BazaarScene(),
+        new GreenhouseScene(),
+        new AtticScene(),
+      ];
+      const scInstance = previewScenes[i];
+      if (scInstance) {
+        ctx.save();
+        ctx.translate(thumbX, thumbY);
+        const scaleX = thumbW / VIEW.PANEL_W;
+        const scaleY = thumbH / VIEW.PANEL_H;
+        ctx.scale(scaleX, scaleY);
+        scInstance.render(ctx, 'left', new Map(), 0);
+        ctx.restore();
       }
+
+      // Glossy sheen and card border on top of miniature
+      const gloss = Painter.linearGradient(ctx, thumbX, thumbY, thumbX, thumbY + thumbH, [
+        [0.0, 'rgba(255, 255, 255, 0.12)'],
+        [0.4, 'rgba(255, 255, 255, 0.0)'],
+        [1.0, 'rgba(0, 0, 0, 0.35)'],
+      ]);
+      Painter.roundedRect(ctx, thumbX, thumbY, thumbW, thumbH, 6, gloss, '#334155', 1.2);
+      ctx.restore();
     });
 
     // Control Banner (Bottom center)
@@ -150,8 +169,8 @@ export class ScreenRenderer {
     const W = VIEW.WIDTH;
     const H = VIEW.HEIGHT;
 
-    // Dim backdrop
-    Painter.roundedRect(ctx, 0, 0, W, H, 0, 'rgba(10, 14, 22, 0.86)');
+    // Dim backdrop (reduced darkening to 35% so underlying scene stays clearly visible)
+    Painter.roundedRect(ctx, 0, 0, W, H, 0, 'rgba(10, 14, 22, 0.35)');
 
     const boxW = 540;
     const boxH = 370;

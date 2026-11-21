@@ -162,6 +162,17 @@ export class AtticScene {
       Painter.line(ctx, 60, 142, 60, 154, '#475569', 2.5); // Key bit shank
       Painter.line(ctx, 60, 151, 64, 151, '#475569', 2);
       Painter.line(ctx, 60, 154, 63, 154, '#475569', 2);
+    } else {
+      // Dashed ghost outline of missing key
+      Painter.circle(ctx, 60, 130, 3, '#1c1917'); // Nail stays
+      ctx.save();
+      ctx.globalAlpha = 0.28;
+      ctx.setLineDash([2, 2]);
+      Painter.circle(ctx, 60, 137, 5, null, '#94a3b8', 1.5);
+      Painter.line(ctx, 60, 142, 60, 154, '#94a3b8', 1.5);
+      Painter.line(ctx, 60, 151, 64, 151, '#94a3b8', 1.5);
+      Painter.line(ctx, 60, 154, 63, 154, '#94a3b8', 1.5);
+      ctx.restore();
     }
 
     // -------------------------------------------------------------
@@ -184,6 +195,13 @@ export class AtticScene {
     if (!hideSkylightStar) {
       Painter.star(ctx, skyX, skyY - 12, 4, 6, 2.5, '#bae6fd');
       Painter.circle(ctx, skyX, skyY - 12, 8, 'rgba(186, 230, 253, 0.45)');
+    } else {
+      // Dashed ghost circle of the missing star
+      ctx.save();
+      ctx.globalAlpha = 0.28;
+      ctx.setLineDash([2, 2]);
+      Painter.circle(ctx, skyX, skyY - 12, 5, null, '#bae6fd', 1.2);
+      ctx.restore();
     }
 
     // Volumetric Angled Moonbeam casting across the attic
@@ -266,10 +284,18 @@ export class AtticScene {
     ctx.save();
     const toothStep = (Math.PI * 2) / masterTeeth;
     for (let i = 0; i < masterTeeth; i++) {
-      if (gearDiff && i === 5) continue; // Missing broken tooth on right panel!
       const ang = i * toothStep;
       const tx = masterGX + Math.cos(ang) * (masterR + 5);
       const ty = masterGY + Math.sin(ang) * (masterR + 5);
+      if (gearDiff && i === 5) {
+        // Missing tooth on right panel - draw faint dashed ghost silhouette!
+        ctx.save();
+        ctx.globalAlpha = 0.28;
+        ctx.setLineDash([2, 2]);
+        Painter.circle(ctx, tx, ty, 4.5, null, PALETTE.attic.brassGearLight, 1.2);
+        ctx.restore();
+        continue;
+      }
       Painter.circle(ctx, tx, ty, 4.5, PALETTE.attic.brassGearLight, PALETTE.attic.brassGear, 1.2);
     }
     Painter.circle(ctx, masterGX, masterGY, masterR, PALETTE.attic.brassGearLight, PALETTE.attic.brassGear, 2.5);
@@ -468,15 +494,32 @@ export class AtticScene {
       for (let ci = 0; ci < 5; ci++) {
         Painter.ellipse(ctx, watX + 8 + ci * 6, watY + 6 + ci * 2, 3.5, 2, 0.3, null, '#f59e0b', 1.6);
       }
+    } else {
+      // Dashed ghost chain links
+      ctx.save();
+      ctx.globalAlpha = 0.28;
+      ctx.setLineDash([2, 2]);
+      for (let ci = 0; ci < 5; ci++) {
+        Painter.ellipse(ctx, watX + 8 + ci * 6, watY + 6 + ci * 2, 3.5, 2, 0.3, null, '#f59e0b', 1.2);
+      }
+      ctx.restore();
     }
 
     // Difference 11: Watchmaker Jeweler Loupe
     const hideLoupe = hasDiff('diff_horologist_loupe');
+    const lpX = 420;
+    const lpY = 485;
     if (!hideLoupe) {
-      const lpX = 420;
-      const lpY = 485;
       Painter.roundedRect(ctx, lpX - 6, lpY - 6, 12, 12, 3, '#1c1917', '#d97706', 1.8);
       Painter.circle(ctx, lpX, lpY, 4, '#38bdf8'); // Loupe lens
+    } else {
+      // Dashed ghost loupe
+      ctx.save();
+      ctx.globalAlpha = 0.28;
+      ctx.setLineDash([2, 2]);
+      Painter.roundedRect(ctx, lpX - 6, lpY - 6, 12, 12, 3, null, '#d97706', 1.4);
+      Painter.circle(ctx, lpX, lpY, 4, null, '#38bdf8', 1.2);
+      ctx.restore();
     }
 
     ctx.restore();

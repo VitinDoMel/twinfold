@@ -160,6 +160,13 @@ export class BazaarScene {
     if (!hideStar) {
       Painter.star(ctx, 95, 55, 4, 5, 2, '#fef08a');
       Painter.circle(ctx, 95, 55, 7, 'rgba(254, 240, 138, 0.4)');
+    } else {
+      // Subtle ghost circle where star was
+      ctx.save();
+      ctx.globalAlpha = 0.28;
+      ctx.setLineDash([2, 2]);
+      Painter.circle(ctx, 95, 55, 4, null, '#fef08a', 1.2);
+      ctx.restore();
     }
 
     // Glowing Crescent Moon
@@ -229,6 +236,14 @@ export class BazaarScene {
       Painter.circle(ctx, 295, 168, 3, '#f59e0b');
       Painter.polygon(ctx, [[293, 168], [297, 168], [299, 185], [291, 185]], '#f59e0b', '#78350f', 0.8);
       Painter.circle(ctx, 295, 187, 2, '#d97706');
+    } else {
+      // Dashed ghost outline of tassel
+      ctx.save();
+      ctx.globalAlpha = 0.28;
+      ctx.setLineDash([2, 2]);
+      Painter.circle(ctx, 295, 168, 3, null, '#f59e0b', 1);
+      Painter.polygon(ctx, [[293, 168], [297, 168], [299, 185], [291, 185]], null, '#f59e0b', 1);
+      ctx.restore();
     }
 
     // Difference 11: Sleek Black Cat on Awning Roof
@@ -239,6 +254,14 @@ export class BazaarScene {
       Painter.polygon(ctx, [[375, 120], [377, 116], [379, 120]], '#09090b'); // Ear
       Painter.circle(ctx, 378, 123, 0.8, '#facc15'); // Yellow glowing eye
       Painter.line(ctx, 362, 128, 356, 123, '#09090b', 1.8); // Tail
+    } else {
+      // Dashed ghost silhouette of cat
+      ctx.save();
+      ctx.globalAlpha = 0.28;
+      ctx.setLineDash([2, 2]);
+      Painter.ellipse(ctx, 370, 127, 9, 6, 0.1, null, '#facc15', 1.2);
+      Painter.circle(ctx, 377, 123, 4.5, null, '#facc15', 1.2);
+      ctx.restore();
     }
 
     // -------------------------------------------------------------
@@ -253,40 +276,52 @@ export class BazaarScene {
     Painter.roundedRect(ctx, rugX + 6, rugY + 6, rugW - 12, rugH - 12, 1, null, PALETTE.bazaar.rugBorder, 1.8);
     Painter.roundedRect(ctx, rugX + 14, rugY + 14, rugW - 28, rugH - 28, 1, PALETTE.bazaar.rugBlue);
 
-    // Difference 4: Persian Carpet Center Medallion
+    // Difference 4: Persian Carpet Center Medallion (Subtle gold rosette: 8 rays vs 6 rays)
     const medDiff = hasDiff('diff_carpet_medallion');
     const medX = rugX + rugW / 2;
     const medY = rugY + rugH / 2;
     if (!medDiff) {
-      // 8-pointed golden star medallion
+      // 8-pointed golden star medallion with ruby center
       Painter.star(ctx, medX, medY, 8, 22, 11, '#fbbf24');
       Painter.circle(ctx, medX, medY, 6, '#be123c');
+      Painter.circle(ctx, medX, medY, 2.5, '#fef08a');
     } else {
-      // Diamond medallion on mutated right
-      Painter.polygon(ctx, [
-        [medX, medY - 20],
-        [medX + 18, medY],
-        [medX, medY + 20],
-        [medX - 18, medY]
-      ], '#38bdf8', '#0284c7', 1.5);
-      Painter.circle(ctx, medX, medY, 5, '#fef08a');
+      // 6-pointed golden star medallion with emerald center (keeps exact same harmonious rug palette!)
+      Painter.star(ctx, medX, medY, 6, 20, 10, '#fbbf24');
+      Painter.circle(ctx, medX, medY, 6, '#059669');
+      Painter.circle(ctx, medX, medY, 2.5, '#fef08a');
     }
     // Carpet fringe threads bottom
     for (let fx = rugX + 4; fx <= rugX + rugW - 4; fx += 5) {
       Painter.line(ctx, fx, rugY + rugH, fx, rugY + rugH + 8, '#fef08a', 1.2);
     }
 
-    // Difference 10: Draped Purple Silk Scarf (Right stall)
-    const hideScarf = hasDiff('diff_hanging_silk_scarf');
-    if (!hideScarf) {
-      Painter.polygon(ctx, [
-        [510, 200],
-        [535, 200],
-        [540, 310],
-        [525, 325],
-        [515, 300]
-      ], PALETTE.bazaar.tentPurple, '#3b0764', 1.2);
-      Painter.line(ctx, 520, 210, 528, 315, '#c084fc', 1.5);
+    // Difference 10: Draped Purple Silk Scarf with Embroidered Gold Crescent Pin (Right stall)
+    // The purple silk curtain hangs on BOTH panels so the stall architecture is identical!
+    Painter.polygon(ctx, [
+      [510, 200],
+      [535, 200],
+      [540, 310],
+      [525, 325],
+      [515, 300]
+    ], PALETTE.bazaar.tentPurple, '#3b0764', 1.2);
+    Painter.line(ctx, 520, 210, 528, 315, '#c084fc', 1.5);
+
+    const hidePin = hasDiff('diff_hanging_silk_scarf');
+    if (!hidePin) {
+      // Golden crescent brooch & fringe tassel pinned to scarf
+      Painter.circle(ctx, 524, 255, 6, '#f59e0b');
+      Painter.circle(ctx, 527, 253, 5, PALETTE.bazaar.tentPurple); // crescent cutout
+      Painter.line(ctx, 524, 260, 524, 274, '#fbbf24', 2); // gold drop tassel
+      Painter.circle(ctx, 524, 275, 2.5, '#d97706');
+    } else {
+      // Ghost dashed outline of the brooch
+      ctx.save();
+      ctx.globalAlpha = 0.28;
+      ctx.setLineDash([2, 2]);
+      Painter.circle(ctx, 524, 255, 5, null, '#fbbf24', 1.2);
+      Painter.line(ctx, 524, 260, 524, 274, '#fbbf24', 1);
+      ctx.restore();
     }
 
     // -------------------------------------------------------------
@@ -299,30 +334,38 @@ export class BazaarScene {
     // Center warm lantern
     Painter.lantern(ctx, 230, 225, 1.2, '#f59e0b', true);
 
-    // Difference 3: Pierced Moroccan Lantern Color / Glow
+    // Difference 3: Pierced Moroccan Lantern (Subtle stained glass: Emerald-teal vs Honey-gold)
     const lanternDiff = hasDiff('diff_moroccan_lantern');
-    const moroccanColor = lanternDiff ? '#f59e0b' : '#0d9488'; // Turquoise vs Amber
-    const moroccanGlow = lanternDiff ? PALETTE.bazaar.lanternGlowWarm : PALETTE.bazaar.lanternGlowTurquoise;
-
+    const moroccanCore = lanternDiff ? '#f59e0b' : '#0d9488'; // Honey-gold vs Emerald-teal stained glass
     const mLanX = 435;
     const mLanY = 195;
-    // Radial color wash
+
+    // Atmospheric warm lantern glow (consistent ambiance on both panels)
     const mGlow = Painter.radialGradient(ctx, mLanX, mLanY, 4, mLanX, mLanY, 44, [
-      [0.0, hexToRgba(moroccanColor, 0.7)],
-      [0.5, moroccanGlow],
+      [0.0, hexToRgba('#f59e0b', 0.55)],
+      [0.5, 'rgba(245, 158, 11, 0.22)'],
       [1.0, 'rgba(0,0,0,0)'],
     ]);
     Painter.circle(ctx, mLanX, mLanY, 44, mGlow);
 
-    // Ornate faceted lantern body
+    // Ornate brass faceted lantern body
     Painter.polygon(ctx, [
       [mLanX, mLanY - 18],
       [mLanX + 12, mLanY - 6],
       [mLanX + 8, mLanY + 14],
       [mLanX - 8, mLanY + 14],
       [mLanX - 12, mLanY - 6]
-    ], moroccanColor, '#451a03', 1.5);
-    // Intricate pierced star slits
+    ], '#b45309', '#451a03', 1.5);
+
+    // Stained glass central facet
+    Painter.polygon(ctx, [
+      [mLanX, mLanY - 10],
+      [mLanX + 6, mLanY],
+      [mLanX, mLanY + 10],
+      [mLanX - 6, mLanY]
+    ], moroccanCore, '#78350f', 1);
+
+    // Pierced star slit highlight
     Painter.circle(ctx, mLanX, mLanY, 2.5, '#ffffff');
     Painter.line(ctx, mLanX - 6, mLanY + 4, mLanX + 6, mLanY + 4, '#ffffff', 1);
 
@@ -369,6 +412,13 @@ export class BazaarScene {
     if (!amphoraDiff) {
       // Second lower zigzag band on left panel
       Painter.ellipse(ctx, ampX, ampY + 10, 16, 5, 0, null, '#f8fafc', 1.8);
+    } else {
+      // Dashed ghost band
+      ctx.save();
+      ctx.globalAlpha = 0.28;
+      ctx.setLineDash([2, 2]);
+      Painter.ellipse(ctx, ampX, ampY + 10, 16, 5, 0, null, '#f8fafc', 1.2);
+      ctx.restore();
     }
 
     // Open Burlap Spice Sacks
@@ -383,11 +433,11 @@ export class BazaarScene {
       Painter.ellipse(ctx, s.x, s.y + 12, 22, 16, 0, '#78350f', '#291104', 1.5);
       Painter.ellipse(ctx, s.x, s.y - 2, 20, 6, 0, '#92400e', '#291104', 1.2); // Rolled cuff
 
-      // Difference 5: Saffron Sack Color (Saffron Gold vs Deep Indigo)
+      // Difference 5: Saffron Sack Color (Golden Saffron vs Warm Amber Turmeric - subtle spice tone!)
       let powderColor = s.color;
       if (idx === 1) {
         const spiceDiff = hasDiff('diff_spice_sack_color');
-        powderColor = spiceDiff ? PALETTE.bazaar.spiceIndigo : PALETTE.bazaar.spiceSaffron;
+        powderColor = spiceDiff ? '#d97706' : PALETTE.bazaar.spiceSaffron;
       }
 
       // Mound of ground spice
@@ -426,6 +476,13 @@ export class BazaarScene {
       Painter.wave(ctx, samX - 6, samY - 32, 16, 2.5, 0.25, 'rgba(255, 255, 255, 0.45)', 1.5);
       Painter.wave(ctx, samX - 2, samY - 44, 14, 2.0, 0.3, 'rgba(255, 255, 255, 0.35)', 1.2);
       ctx.restore();
+    } else {
+      // Dashed ghost curls of steam
+      ctx.save();
+      ctx.globalAlpha = 0.28;
+      ctx.setLineDash([2, 2]);
+      Painter.wave(ctx, samX - 6, samY - 32, 16, 2.5, 0.25, '#ffffff', 1);
+      ctx.restore();
     }
 
     // Difference 7: Pomegranate Fruit Dish (Cut with seeds vs whole round)
@@ -461,9 +518,18 @@ export class BazaarScene {
 
     const glassesCount = trayDiff ? 2 : 3;
     const glassOffsets = [-12, 0, 12];
-    for (let gi = 0; gi < glassesCount; gi++) {
+    for (let gi = 0; gi < 3; gi++) {
       const gx = trayX + glassOffsets[gi];
       const gy = trayY - 4;
+      if (trayDiff && gi === 2) {
+        // Ghost dashed 3rd glass
+        ctx.save();
+        ctx.globalAlpha = 0.28;
+        ctx.setLineDash([2, 2]);
+        Painter.roundedRect(ctx, gx - 4, gy - 12, 8, 14, 1, null, '#0284c7', 1);
+        ctx.restore();
+        continue;
+      }
       // Glass body
       Painter.roundedRect(ctx, gx - 4, gy - 12, 8, 14, 1, 'rgba(224, 242, 254, 0.7)', '#0284c7', 0.8);
       // Mint green tea liquid inside
