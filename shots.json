@@ -1,0 +1,26 @@
+[
+  {
+    "file": "screenshots/1-hunt.jpg",
+    "shot": "hunt",
+    "seed": "1",
+    "description": "Greenhouse Lab cover shot showing 4/9 differences found with markers, pulsing hint ring on orchid, fading error X, and time bar at ~45%"
+  },
+  {
+    "file": "screenshots/2-title.jpg",
+    "shot": "title",
+    "seed": "1",
+    "description": "Title screen with procedural vector miniatures of all four realms in real time"
+  },
+  {
+    "file": "screenshots/3-attic.jpg",
+    "shot": "attic",
+    "seed": "1",
+    "description": "Clockwork Attic with 7/10 differences found, horological gears, and critical red timer"
+  },
+  {
+    "file": "screenshots/4-clear.jpg",
+    "shot": "clear",
+    "seed": "1",
+    "description": "Stage clear modal with three stars and semi-transparent scene background"
+  }
+]
